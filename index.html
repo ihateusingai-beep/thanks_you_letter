@@ -59,6 +59,7 @@
       place-items: center;
       padding: max(24px, env(safe-area-inset-top)) 20px max(32px, env(safe-area-inset-bottom));
       position: relative;
+      z-index: 10;
     }
 
     /* ===== ENVELOPE ===== */
@@ -282,6 +283,7 @@
       opacity: 0;
       pointer-events: none;
       z-index: 10;
+      background: transparent;
     }
 
     .letter-scene.is-visible {
@@ -290,25 +292,28 @@
     }
 
     .letter {
-      width: min(520px, 94vw);
-      max-height: min(86dvh, 820px);
+      width: min(520px, 92vw);
+      max-height: min(82dvh, 820px);
       overflow: auto;
       -webkit-overflow-scrolling: touch;
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.35), transparent 18%),
-        var(--paper);
+        linear-gradient(180deg, rgba(255,255,255,0.42), transparent 18%),
+        rgba(244, 239, 230, 0.78);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
       border-radius: 3px;
       padding: clamp(28px, 6vw, 48px) clamp(22px, 5vw, 44px) clamp(32px, 6vw, 52px);
       box-shadow:
-        0 24px 60px rgba(44, 36, 22, 0.18),
+        0 24px 60px rgba(44, 36, 22, 0.28),
         0 1px 0 rgba(255,255,255,0.55) inset,
-        0 0 0 1px rgba(44,36,22,0.04);
+        0 0 0 1px rgba(44,36,22,0.06);
       transform: translateY(36px) scale(0.96);
       opacity: 0;
       transition:
         transform 0.85s var(--ease-paper) 0.15s,
         opacity 0.7s var(--ease-paper) 0.1s;
       position: relative;
+      z-index: 10;
     }
 
     .letter::before {
@@ -554,10 +559,10 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      z-index: 1;
+      z-index: 5; /* behind letter, in front of page bg */
       pointer-events: none;
       opacity: 0;
-      transition: opacity 1.4s var(--ease-paper);
+      transition: opacity 1s var(--ease-paper);
       background: transparent;
     }
 
@@ -776,18 +781,19 @@
         let heartPointsCount = 0;
         let targetPoints = [];
         let particles = [];
-        const traceCount = mobile ? 18 : 42;
+        const traceCount = mobile ? 28 : 64;
         const config = { traceK: 0.4, timeDelta: 0.01 };
 
         function buildShape() {
-          const s = Math.min(width, height);
-          const s1 = s * 0.18;
-          const s2 = s * 0.13;
-          const s3 = s * 0.08;
-          const y1 = s * 0.011;
-          const y2 = s * 0.008;
-          const y3 = s * 0.0045;
-          const dr = mobile ? 0.28 : 0.12;
+          /* oversized heart so it peeks around / through the letter */
+          const base = Math.min(width * 0.48, height * 0.58);
+          const s1 = base;
+          const s2 = base * 0.72;
+          const s3 = base * 0.46;
+          const y1 = base * 0.065;
+          const y2 = base * 0.047;
+          const y3 = base * 0.03;
+          const dr = mobile ? 0.18 : 0.07;
           pointsOrigin = [];
           for (let i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), s1, y1));
           for (let i = 0; i < Math.PI * 2; i += dr) pointsOrigin.push(scaleAndTranslate(heartPosition(i), s2, y2));
@@ -807,7 +813,7 @@
               q: ~~(rand() * heartPointsCount),
               D: 2 * (i % 2) - 1,
               force: 0.2 * rand() + 0.7,
-              f: "hsla(0," + ~~(40 * rand() + 100) + "%," + ~~(55 * rand() + 30) + "%,.35)",
+              f: "hsla(" + ~~(rand() * 8) + "," + ~~(35 * rand() + 120) + "%," + ~~(30 * rand() + 55) + "%,.95)",
               trace: []
             };
             for (let k = 0; k < traceCount; k++) p.trace[k] = { x: x, y: y };
@@ -827,10 +833,9 @@
         function resize() {
           width = canvas.width = Math.max(1, Math.floor(koef * window.innerWidth));
           height = canvas.height = Math.max(1, Math.floor(koef * window.innerHeight));
-          ctx.fillStyle = "rgba(0,0,0,1)";
-          ctx.fillRect(0, 0, width, height);
+          ctx.clearRect(0, 0, width, height);
           buildShape();
-          if (!particles.length || particles.length !== heartPointsCount) buildParticles();
+          buildParticles();
         }
 
         function loop() {
@@ -839,9 +844,10 @@
           pulse((1 + n) * 0.5, (1 + n) * 0.5);
           time += ((Math.sin(time) < 0) ? 9 : (n > 0.8 ? 0.2 : 1)) * config.timeDelta;
 
-          ctx.fillStyle = "rgba(0,0,0,.1)";
-          ctx.fillRect(0, 0, width, height);
+          /* transparent canvas — no black plate covering the letter */
+          ctx.clearRect(0, 0, width, height);
 
+          const dot = mobile ? 2 : 2.8;
           for (let i = particles.length; i--;) {
             const u = particles[i];
             const q = targetPoints[u.q];
@@ -873,7 +879,7 @@
             }
             ctx.fillStyle = u.f;
             for (let k = 0; k < u.trace.length; k++) {
-              ctx.fillRect(u.trace[k].x, u.trace[k].y, 1, 1);
+              ctx.fillRect(u.trace[k].x, u.trace[k].y, dot, dot);
             }
           }
           rafId = window.requestAnimationFrame(loop);
@@ -1061,7 +1067,7 @@
         document.body.classList.add("is-open");
 
         if (heart) {
-          window.setTimeout(function () { heart.start(); }, reduce ? 0 : 420);
+          window.setTimeout(function () { heart.start(); }, reduce ? 0 : 260);
         }
 
         if (reduce) {
