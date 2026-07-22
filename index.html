@@ -609,26 +609,28 @@
     }
 
     .egg-label {
-      letter-spacing: 0.18em;
-      font-size: 0.78rem;
-      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.82rem;
+      font-style: italic;
+      text-transform: none;
       max-width: 0;
       overflow: hidden;
       opacity: 0;
       white-space: nowrap;
+      color: var(--wax);
       transition:
-        max-width 0.4s var(--ease-paper),
-        opacity 0.3s ease,
-        margin 0.3s ease;
+        max-width 0.55s var(--ease-paper),
+        opacity 0.35s ease,
+        margin 0.35s ease;
       margin-left: 0;
     }
 
     .egg:hover .egg-label,
     .egg.is-open .egg-label,
     .egg:focus-visible .egg-label {
-      max-width: 80px;
+      max-width: 280px;
       opacity: 1;
-      margin-left: 2px;
+      margin-left: 6px;
     }
 
 
@@ -803,7 +805,7 @@
 
         <button class="egg" id="eggBtn" type="button" aria-label="小彩蛋" aria-expanded="false">
           <span class="egg-star" aria-hidden="true">★</span>
-          <span class="egg-label" id="eggLabel">P4B</span>
+          <span class="egg-label" id="eggLabel">the best us yet to come</span>
         </button>
       </article>
     </section>
