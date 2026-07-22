@@ -298,7 +298,7 @@
       -webkit-overflow-scrolling: touch;
       background:
         linear-gradient(180deg, rgba(255,255,255,0.42), transparent 18%),
-        rgba(244, 239, 230, 0.78);
+        rgba(244, 239, 230, 0.72);
       backdrop-filter: blur(2px);
       -webkit-backdrop-filter: blur(2px);
       border-radius: 3px;
@@ -801,16 +801,29 @@
           heartPointsCount = pointsOrigin.length;
         }
 
+        function pulse(kx, ky) {
+          for (let i = 0; i < pointsOrigin.length; i++) {
+            targetPoints[i] = [
+              kx * pointsOrigin[i][0] + width / 2,
+              ky * pointsOrigin[i][1] + height / 2
+            ];
+          }
+        }
+
         function buildParticles() {
+          /* seed on the heart path so the shape is readable immediately */
+          pulse(1, 1);
           particles = [];
           for (let i = 0; i < heartPointsCount; i++) {
-            const x = rand() * width;
-            const y = rand() * height;
+            const q = i % heartPointsCount;
+            const t = targetPoints[q] || [width / 2, height / 2];
+            const x = t[0] + (rand() - 0.5) * 30;
+            const y = t[1] + (rand() - 0.5) * 30;
             const p = {
               vx: 0,
               vy: 0,
               speed: rand() + 5,
-              q: ~~(rand() * heartPointsCount),
+              q: q,
               D: 2 * (i % 2) - 1,
               force: 0.2 * rand() + 0.7,
               f: "hsla(" + ~~(rand() * 8) + "," + ~~(35 * rand() + 120) + "%," + ~~(30 * rand() + 55) + "%,.95)",
@@ -818,15 +831,6 @@
             };
             for (let k = 0; k < traceCount; k++) p.trace[k] = { x: x, y: y };
             particles.push(p);
-          }
-        }
-
-        function pulse(kx, ky) {
-          for (let i = 0; i < pointsOrigin.length; i++) {
-            targetPoints[i] = [
-              kx * pointsOrigin[i][0] + width / 2,
-              ky * pointsOrigin[i][1] + height / 2
-            ];
           }
         }
 
@@ -1066,9 +1070,7 @@
         live.textContent = "信已打開";
         document.body.classList.add("is-open");
 
-        if (heart) {
-          window.setTimeout(function () { heart.start(); }, reduce ? 0 : 260);
-        }
+        if (heart) heart.start();
 
         if (reduce) {
           envelopeBtn.classList.add("is-gone");
